@@ -1,0 +1,19 @@
+{
+  "name": "farbuy",
+  "version": "1.0.0",
+  "description": "Farcaster Group Buy",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.8"
+  },
+  "dependencies": {
+    "@chainlink/contracts": "^1.2.0",
+    "@openzeppelin/contracts": "^5.0.2"
+  }
+}
