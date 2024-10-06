@@ -5,6 +5,8 @@
 // Runtime Environment's members available in the global scope.
 const hre = require("hardhat");
 
+const _config_ = require("../config").config;
+
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
   // line interface.
@@ -16,7 +18,12 @@ async function main() {
   // We get the contract to deploy
   const Contract = await hre.ethers.getContractFactory("FarBuyCoupon");
 
-  const contract = await Contract.deploy();
+  const contract = await Contract.deploy(
+                              BigNumber.from((_config_.ticketPrice * 10 ** 18).toString()),
+                              _config_.LINKTokenAddress,
+                              _config_.VRFWrapperAddress,
+                              _config_.callbackGasLimit,
+                          );
 
   await contract.deployed();
 
