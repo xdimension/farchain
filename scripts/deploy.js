@@ -20,9 +20,9 @@ async function main() {
 
   const contract = await Contract.deploy(
                               BigNumber.from((_config_.ticketPrice * 10 ** 18).toString()),
-                              _config_.LINKTokenAddress,
-                              _config_.VRFWrapperAddress,
-                              _config_.callbackGasLimit,
+                              _config_.VRFSubscriptionId,
+                              _config_.VRFCoordinator,
+                              _config_.VRFKeyHash,
                           );
 
   await contract.deployed();
