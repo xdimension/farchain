@@ -131,10 +131,7 @@ contract FarBuyCoupon is VRFConsumerBaseV2Plus {
         return ticketList;
     }
 
-    function generateRandomNumbers(
-        uint32 couponID,
-        uint8 countRandomNums
-    ) internal virtual {
+    function generateRandomNumbers(uint32 couponID) internal virtual {
 
         uint requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
@@ -142,7 +139,7 @@ contract FarBuyCoupon is VRFConsumerBaseV2Plus {
                 subId: vrf_subscriptionId,
                 requestConfirmations: VRF_REQUEST_CONFIRMATIONS,
                 callbackGasLimit: vrf_callbackGasLimit,
-                numWords: countRandomNums,
+                numWords: uint32(ticketNums[couponID].length),
                 extraArgs: VRFV2PlusClient._argsToBytes(
                     VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
                 )
@@ -159,17 +156,20 @@ contract FarBuyCoupon is VRFConsumerBaseV2Plus {
         require(randomness[0] != 0, "Problem in getting randomness");
 
         uint32 couponID = randomizeRequests[requestId];
+        uint8 countTickets = uint8(ticketNums[couponID].length);
 
-        for (uint8 i = 0; i < coupons[couponID].numOfWinners; i++) {
-            uint idx = randomness[i] % ticketNums[couponID].length;
-            uint32 ticketNum = ticketNums[couponID][idx];
+        for (uint8 i = countTickets - 1; i > 0; i--) {
+            uint256 j = randomness[countTickets - i - 1] % (i + 1);
+            (ticketNums[couponID][i], ticketNums[couponID][j]) = (ticketNums[couponID][j], ticketNums[couponID][i]);
+        }
 
+        for(uint8 i = 0; i < coupons[couponID].numOfWinners; i++) {
+            uint32 ticketNum = ticketNums[couponID][i];
             tickets[couponID][ticketNum].isWinner = true;
         }
 
         // set isDrawn flag to avoid drawing again for the this coupon
         coupons[couponID].isDrawn = true;
-
         isChoosingWinners = false;
 
         // Emit an event with the winners
@@ -178,6 +178,7 @@ contract FarBuyCoupon is VRFConsumerBaseV2Plus {
 
     function chooseWinners(uint32 couponID) public onlyOwner {
         require(coupons[couponID].couponID != 0, "Invalid Coupon ID");
+        require(!isChoosingWinners, "In progress");
         require(!coupons[couponID].isDrawn, "Coupon already been drawn");
         require(
             ticketNums[couponID].length >= coupons[couponID].minNumOfTickets,
@@ -186,7 +187,7 @@ contract FarBuyCoupon is VRFConsumerBaseV2Plus {
 
         isChoosingWinners = true;
 
-        generateRandomNumbers(couponID, coupons[couponID].numOfWinners);
+        generateRandomNumbers(couponID);
     }
 
     function setVRFCallbackGasLimit(uint32 _val) external onlyOwner {
