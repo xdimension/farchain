@@ -65,6 +65,7 @@ contract FarBuyCoupon is VRFConsumerBaseV2Plus {
         uint8 _maxNumOfTickets,
         uint8 _numOfWinners
     ) public onlyOwner {
+        require(coupons[_couponID].couponID == 0, "Coupon ID already exists");
         require(
             _minNumOfTickets <= _maxNumOfTickets,
             "Min number of tickets must be less than or equal to max number of tickets"
@@ -132,7 +133,6 @@ contract FarBuyCoupon is VRFConsumerBaseV2Plus {
     }
 
     function generateRandomNumbers(uint32 couponID) internal virtual {
-
         uint requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: vrf_keyHash,
@@ -160,10 +160,13 @@ contract FarBuyCoupon is VRFConsumerBaseV2Plus {
 
         for (uint8 i = countTickets - 1; i > 0; i--) {
             uint256 j = randomness[countTickets - i - 1] % (i + 1);
-            (ticketNums[couponID][i], ticketNums[couponID][j]) = (ticketNums[couponID][j], ticketNums[couponID][i]);
+            (ticketNums[couponID][i], ticketNums[couponID][j]) = (
+                ticketNums[couponID][j],
+                ticketNums[couponID][i]
+            );
         }
 
-        for(uint8 i = 0; i < coupons[couponID].numOfWinners; i++) {
+        for (uint8 i = 0; i < coupons[couponID].numOfWinners; i++) {
             uint32 ticketNum = ticketNums[couponID][i];
             tickets[couponID][ticketNum].isWinner = true;
         }
