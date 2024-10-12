@@ -18,9 +18,12 @@ contract FarBuyCoupon is VRFConsumerBaseV2Plus {
 
     struct Coupon {
         uint32 couponID;
+        address seller;
         uint8 minNumOfTickets;
         uint8 maxNumOfTickets;
         uint8 numOfWinners;
+        uint availFrom;
+        uint availTo;
         bool isDrawn;
     }
 
@@ -61,9 +64,12 @@ contract FarBuyCoupon is VRFConsumerBaseV2Plus {
 
     function createCoupon(
         uint32 _couponID,
+        address _seller,
         uint8 _minNumOfTickets,
         uint8 _maxNumOfTickets,
-        uint8 _numOfWinners
+        uint8 _numOfWinners,
+        uint _availFrom,
+        uint _availTo
     ) public onlyOwner {
         require(coupons[_couponID].couponID == 0, "Coupon ID already exists");
         require(
@@ -77,9 +83,12 @@ contract FarBuyCoupon is VRFConsumerBaseV2Plus {
 
         coupons[_couponID] = Coupon(
             _couponID,
+            _seller,
             _minNumOfTickets,
             _maxNumOfTickets,
             _numOfWinners,
+            _availFrom,
+            _availTo,
             false
         );
     }
