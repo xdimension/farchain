@@ -8,6 +8,8 @@ const hre = require("hardhat");
 const _config_ = require("../config").config;
 
 async function main() {
+  const networkConfig = hre.network.config;
+
   // Hardhat always runs the compile task when running scripts with its command
   // line interface.
   //
@@ -21,8 +23,8 @@ async function main() {
   const contract = await Contract.deploy(
                               BigNumber.from((_config_.ticketPrice * 10 ** 18).toString()),
                               _config_.VRFSubscriptionId,
-                              _config_.VRFCoordinator,
-                              _config_.VRFKeyHash,
+                              networkConfig.VRFCoordinator,
+                              networkConfig.VRFKeyHash,
                           );
 
   await contract.deployed();
