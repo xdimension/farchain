@@ -21,15 +21,17 @@ async function main() {
   const Contract = await hre.ethers.getContractFactory("FarBuyCoupon");
 
   const contract = await Contract.deploy(
-                              BigNumber.from((_config_.ticketPrice * 10 ** 18).toString()),
+                              (_config_.ticketPrice * 10 ** 18).toString(),
                               _config_.VRFSubscriptionId,
                               networkConfig.VRFCoordinator,
                               networkConfig.VRFKeyHash,
                           );
 
-  await contract.deployed();
+  await contract.waitForDeployment();
 
-  console.log("Contract deployed to:", contract.address);
+  const contractAddress = await contract.getAddress();
+
+  console.log("Contract deployed to:", contractAddress);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
