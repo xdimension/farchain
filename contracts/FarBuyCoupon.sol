@@ -33,6 +33,8 @@ contract FarBuyCoupon is VRFConsumerBaseV2Plus {
     mapping(uint32 => Coupon) public coupons; // couponID => Coupon
     mapping(uint32 => mapping(uint32 => Ticket)) public tickets; // couponID => ticketNum => Ticket
     mapping(uint32 => uint32[]) public ticketNums; // couponID => array of ticketNum
+    mapping(uint32 => mapping(address => uint32[])) public buyerTicketNums; // couponID => buyerAddr => array of ticketNum
+    mapping(address => uint32[]) public buyerCouponIDs; // buyerAddr => array of couponID
 
     uint public ticketPrice;
 
@@ -118,6 +120,8 @@ contract FarBuyCoupon is VRFConsumerBaseV2Plus {
         );
 
         ticketNums[_couponID].push(ticketNum);
+        buyerTicketNums[_couponID][msg.sender].push(ticketNum);
+        buyerCouponIDs[msg.sender].push(_couponID);
     }
 
     function getTicket(
@@ -125,6 +129,37 @@ contract FarBuyCoupon is VRFConsumerBaseV2Plus {
         uint32 _ticketNum
     ) public view returns (Ticket memory) {
         return tickets[_couponID][_ticketNum];
+    }
+
+    function getBuyerCoupons(
+        address _buyerAddr
+    ) public view returns (Coupon[] memory) {
+        uint32[] memory arrBuyerCouponIDs = buyerCouponIDs[_buyerAddr];
+        uint32 countCoupons = uint32(arrBuyerCouponIDs.length);
+        Coupon[] memory couponList = new Coupon[](countCoupons);
+
+        for (uint32 i = 0; i < countCoupons; i++) {
+            uint32 couponID = arrBuyerCouponIDs[i];
+            couponList[i] = coupons[couponID];
+        }
+
+        return couponList;
+    }
+
+    function getBuyerTickets(
+        uint32 _couponID,
+        address _buyerAddr
+    ) public view returns (Ticket[] memory) {
+        uint32[] memory arrTicketNums = buyerTicketNums[_couponID][_buyerAddr];
+        uint32 countTickets = uint32(arrTicketNums.length);
+        Ticket[] memory ticketList = new Ticket[](countTickets);
+
+        for (uint32 i = 0; i < countTickets; i++) {
+            uint32 ticketNum = arrTicketNums[i];
+            ticketList[i] = tickets[_couponID][ticketNum];
+        }
+
+        return ticketList;
     }
 
     function getTicketsByCouponID(
